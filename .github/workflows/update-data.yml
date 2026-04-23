@@ -5,6 +5,9 @@ on:
     - cron: '*/30 * * * *'   # runs every 30 minutes
   workflow_dispatch:           # allows manual trigger from GitHub
  
+permissions:
+  contents: write              # allows the Action to push back to the repo
+ 
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -21,6 +24,8 @@ jobs:
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add data.json
           git diff --staged --quiet || git commit -m "Update dashboard data"
           git push
+ 
