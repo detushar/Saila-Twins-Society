@@ -188,8 +188,15 @@
 
     // Fetch from same-origin data.json — no CORS, no Google account issues
     fetch('./data.json?t=' + Date.now())
-      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(d => {
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(txt => {
+        // Show first 120 chars in error if JSON fails — helps debug
+        let d;
+        try {
+          d = JSON.parse(txt);
+        } catch(ex) {
+          throw new Error('Bad JSON. First 120 chars: ' + txt.substring(0, 120));
+        }
         if (!d.generatedAt) throw new Error('Data not yet available — check back in a few minutes.');
         render(d);
         document.getElementById('refreshBtn').classList.remove('spin');
