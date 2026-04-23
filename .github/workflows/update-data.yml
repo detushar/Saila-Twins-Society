@@ -1,0 +1,26 @@
+name: Update Dashboard Data
+ 
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # runs every 30 minutes
+  workflow_dispatch:           # allows manual trigger from GitHub
+ 
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+ 
+      - name: Fetch data from Apps Script
+        run: |
+          curl -L -o data.json \
+            "https://script.google.com/macros/s/AKfycbz23uiQuQGOapghi_ky6oQ3_xRFPxS-ogoj1cN4V5WiKaFGI4he4V90YM6P3T3tQcYV/exec?action=data"
+ 
+      - name: Commit and push if data changed
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add data.json
+          git diff --staged --quiet || git commit -m "Update dashboard data"
+          git push
