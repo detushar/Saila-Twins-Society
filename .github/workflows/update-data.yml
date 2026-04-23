@@ -2,7 +2,7 @@ name: Update Dashboard Data
 
 on:
   schedule:
-    - cron: '*/60 * * * *'   # runs every 30 minutes
+      - cron: '58 2-15 * * *'   # runs every 30 minutes
   workflow_dispatch:           # allows manual trigger from GitHub
 
 permissions:
