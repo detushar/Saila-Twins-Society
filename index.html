@@ -169,8 +169,8 @@
 <button class="refresh" id="refreshBtn" onclick="load()" title="Refresh">↻</button>
 
 <script>
-  // ── Apps Script JSON endpoint ──────────────────────────────────────────────
-  const API = 'https://script.google.com/macros/s/AKfycbz23uiQuQGOapghi_ky6oQ3_xRFPxS-ogoj1cN4V5WiKaFGI4he4V90YM6P3T3tQcYV/exec?action=data';
+  // ── Apps Script JSONP endpoint ─────────────────────────────────────────────
+  const API_BASE = 'https://script.google.com/macros/s/AKfycbz23uiQuQGOapghi_ky6oQ3_xRFPxS-ogoj1cN4V5WiKaFGI4he4V90YM6P3T3tQcYV/exec';
 
   const fmtINR = n => '₹' + Math.round(Number(n) || 0).toLocaleString('en-IN');
   const compact = n => {
@@ -189,17 +189,26 @@
     document.getElementById('loading').className      = 'loading';
     document.getElementById('loading').textContent    = 'Loading dashboard…';
 
-    fetch(API)
-      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(d => {
-        render(d);
-        document.getElementById('refreshBtn').classList.remove('spin');
-      })
-      .catch(err => {
-        document.getElementById('loading').className   = 'error';
-        document.getElementById('loading').textContent = 'Error loading data: ' + err.message;
-        document.getElementById('refreshBtn').classList.remove('spin');
-      });
+    // Remove previous JSONP script tag if any
+    const old = document.getElementById('_jsonp');
+    if (old) old.remove();
+
+    // Set up callback
+    window._dashCb = function(d) {
+      render(d);
+      document.getElementById('refreshBtn').classList.remove('spin');
+    };
+
+    // Inject script tag — bypasses CORS entirely
+    const s  = document.createElement('script');
+    s.id     = '_jsonp';
+    s.onerror = function() {
+      document.getElementById('loading').className   = 'error';
+      document.getElementById('loading').textContent = 'Error loading data. Check your connection and try again.';
+      document.getElementById('refreshBtn').classList.remove('spin');
+    };
+    s.src = API_BASE + '?action=data&callback=_dashCb';
+    document.head.appendChild(s);
   }
 
   function esc(s) {
