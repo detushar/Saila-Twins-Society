@@ -1,13 +1,10 @@
 name: Update Dashboard Data
-
 on:
   schedule:
-      - cron: '58 2-15 * * *'   # runs every 30 minutes
-  workflow_dispatch:           # allows manual trigger from GitHub
-
+    - cron: '*/30 * * * *' # Corrected: This runs every 30 minutes
+  workflow_dispatch: # Allows you to test it manually from the "Actions" tab
 permissions:
-  contents: write              # allows the Action to push back to the repo
-
+  contents: write
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -17,14 +14,19 @@ jobs:
 
       - name: Fetch data from Apps Script
         run: |
-          curl -L -o data.json \
-            "https://script.google.com/macros/s/AKfycbz23uiQuQGOapghi_ky6oQ3_xRFPxS-ogoj1cN4V5WiKaFGI4he4V90YM6P3T3tQcYV/exec?action=data"
+          # Use -f to fail the step if the URL returns an error (404, 500, etc.)
+          curl -f -L -o data.json \
+          "https://script.google.com/macros/s/AKfycbz23uiQuQGOapghi_ky6oQ3_xRFPxS-ogoj1cN4V5WiKaFGI4he4V90YM6P3T3tQcYV/exec?action=data"
 
       - name: Commit and push if data changed
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add data.json
-          git diff --staged --quiet || git commit -m "Update dashboard data"
-          git push
+          # Only commit and push if there are actual changes in data.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Update dashboard data"
+            git push
+          else
+            echo "No changes detected in data.json"
+          fi
