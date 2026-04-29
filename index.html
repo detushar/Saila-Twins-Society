@@ -98,6 +98,18 @@
   .loading, .error { text-align: center; padding: 60px 20px; color: var(--mute); }
   .error { color: var(--red); }
   .empty { color: var(--mute); padding: 8px 0; font-size: 12px; }
+  .exp-log-month { background: var(--card); border-radius: 12px; padding: 14px 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(20,35,60,0.07); }
+  .exp-log-month-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+  .exp-log-month-head .mo-total { color: var(--red); font-size: 13px; }
+  .exp-log-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .exp-log-table th { font-size: 10px; font-weight: 700; color: var(--mute); padding: 0 4px 6px; border-bottom: 1px solid var(--border); text-align: left; }
+  .exp-log-table th.amt { text-align: right; }
+  .exp-log-table td { padding: 6px 4px; border-bottom: 1px solid #f0f2f5; color: #2d3748; text-align: left; vertical-align: top; }
+  .exp-log-table td.amt { text-align: right; color: var(--red); font-weight: 600; white-space: nowrap; }
+  .exp-log-table td.dt { color: var(--mute); white-space: nowrap; font-size: 10.5px; }
+  .exp-log-table td.cat { color: var(--teal); font-size: 10.5px; }
+  .exp-log-table td.itm { font-weight: 500; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .exp-log-table tr.total-row td { border-bottom: none; border-top: 2px solid var(--border); font-weight: 700; color: var(--navy); padding-top: 8px; }
 </style>
 </head>
 <body>
@@ -162,6 +174,9 @@
     <h2>⭐ Highest Expenses — All Time</h2>
     <div id="top-expenses"></div>
   </div>
+
+  <div class="section-title">Expense Log — Last 2 Months</div>
+  <div id="exp-log-section"></div>
 
 </div>
 
@@ -293,6 +308,53 @@
         scales: { x:{ ticks:{ callback: v=>compact(v), font:{size:9} }, grid:{color:'#eef0f4'} }, y:{ ticks:{font:{size:10}}, grid:{display:false} } }
       }
     });
+
+    // ── Expense Log — Last 2 Months ────────────────────────────────
+    const fmtDate = s => {
+      if (!s) return '';
+      const p = s.split('-');
+      if (p.length < 3) return s;
+      const ms = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return p[2] + ' ' + ms[Number(p[1]) - 1];
+    };
+
+    const expLogDiv = document.getElementById('exp-log-section');
+    if (d.expenseLogLast2 && d.expenseLogLast2.length) {
+      expLogDiv.innerHTML = d.expenseLogLast2.map(mo =>
+        `<div class="exp-log-month">
+          <div class="exp-log-month-head">
+            <span>📅 ${esc(mo.month)}</span>
+            <span class="mo-total">${fmtINR(mo.total)}</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="exp-log-table">
+              <thead><tr>
+                <th>Date</th>
+                <th>Item / Description</th>
+                <th>Category</th>
+                <th class="amt">Amount</th>
+              </tr></thead>
+              <tbody>
+                ${mo.entries.map(e =>
+                  `<tr>
+                    <td class="dt">${esc(fmtDate(e.date))}</td>
+                    <td class="itm">${esc(e.item || e.category)}</td>
+                    <td class="cat">${esc(e.category)}</td>
+                    <td class="amt">${fmtINR(e.amount)}</td>
+                  </tr>`
+                ).join('')}
+                <tr class="total-row">
+                  <td colspan="3" style="text-align:right">Monthly Total</td>
+                  <td class="amt">${fmtINR(mo.total)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>`
+      ).join('');
+    } else {
+      expLogDiv.innerHTML = '<div class="exp-log-month"><div class="empty" style="text-align:center;padding:16px 0;">No expense log data available for the last 2 months.</div></div>';
+    }
 
     const topDiv = document.getElementById('top-expenses');
     topDiv.innerHTML = (d.topExpenses && d.topExpenses.length)
