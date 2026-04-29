@@ -1,0 +1,25 @@
+{
+  "name": "Society Dashboard",
+  "short_name": "Society",
+  "description": "Society account balance & expense tracker",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "./index.html",
+  "scope": "./",
+  "theme_color": "#1F3A5F",
+  "background_color": "#EEF2F7",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
