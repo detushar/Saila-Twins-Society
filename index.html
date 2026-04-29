@@ -4,11 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Society Dashboard</title>
-<link rel="manifest" href='data:application/json,{"name":"Society Dashboard","short_name":"Society","display":"standalone","start_url":".","theme_color":"#1F3A5F","background_color":"#EEF2F7"}'>
+<link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Society">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="msapplication-TileImage" content="icons/icon-192.png">
+<meta name="msapplication-TileColor" content="#1F3A5F">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -364,6 +367,14 @@
            <div class="meta"><span class="cat">${esc(e.category)}</span> · ${esc(e.date)}</div></div></div>
            <div class="amt">${fmtINR(e.amount)}</div></div>`).join('')
       : '<div class="empty">No expenses logged yet.</div>';
+  }
+
+  // Register Service Worker (required for PWA install prompt on Android)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .catch(err => console.warn('SW registration failed:', err));
+    });
   }
 
   load();
